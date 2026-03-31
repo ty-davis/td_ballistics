@@ -11,6 +11,16 @@ const themes: { label: string; value: Theme; description: string }[] = [
   { label: 'Light', value: 'light', description: 'Clean light mode' },
   { label: 'Military', value: 'military', description: 'High-contrast green' },
 ]
+
+const unitOptions = [
+  { label: 'Imperial', value: 'imperial' },
+  { label: 'Metric', value: 'metric' },
+]
+
+const angleOptions = [
+  { label: 'MOA', value: 'MOA' },
+  { label: 'MRAD', value: 'MRAD' },
+]
 </script>
 
 <template>
@@ -18,89 +28,74 @@ const themes: { label: string; value: Theme; description: string }[] = [
     :visible="visible"
     position="right"
     header="Settings"
-    :pt="{
-      root: 'bg-bg-surface border-l border-border-default w-80',
-      header: 'px-6 py-4 border-b border-border-subtle flex items-center justify-between',
-      headerTitle: 'text-text-primary font-semibold',
-      closeButton: 'text-text-muted hover:text-text-primary',
-      content: 'px-6 py-4',
-    }"
     @update:visible="emit('update:visible', $event)"
   >
-    <div class="space-y-6">
+    <div class="space-y-6 p-1">
       <!-- Theme -->
       <div>
         <p class="section-label">Theme</p>
-        <div class="space-y-1.5">
-          <button
+        <div class="space-y-2">
+          <div
             v-for="theme in themes"
             :key="theme.value"
             :class="[
-              'w-full flex items-center gap-3 p-3 rounded border transition-colors text-left',
+              'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
               settings.theme === theme.value
-                ? 'border-primary bg-primary/10'
-                : 'border-border-default bg-bg-elevated hover:bg-bg-overlay',
+                ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
+                : 'border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800',
             ]"
             @click="settings.setTheme(theme.value)"
           >
-            <div :class="[
-              'w-4 h-4 rounded-full border-2 flex-shrink-0',
-              settings.theme === theme.value ? 'border-primary bg-primary' : 'border-border-strong',
-            ]" />
-            <div>
-              <p class="text-sm font-medium text-text-primary">{{ theme.label }}</p>
+            <RadioButton
+              :model-value="settings.theme"
+              :value="theme.value"
+              :input-id="theme.value"
+              @change="settings.setTheme(theme.value)"
+            />
+            <label :for="theme.value" class="cursor-pointer">
+              <p class="text-sm font-medium">{{ theme.label }}</p>
               <p class="text-xs text-text-muted">{{ theme.description }}</p>
-            </div>
-          </button>
+            </label>
+          </div>
         </div>
       </div>
+
+      <Divider />
 
       <!-- Units -->
       <div>
         <p class="section-label">Units</p>
-        <div class="flex gap-2">
-          <button
-            v-for="u in ['imperial', 'metric'] as const"
-            :key="u"
-            :class="[
-              'flex-1 py-2 rounded border text-sm transition-colors capitalize',
-              settings.unitSystem === u
-                ? 'bg-primary border-primary text-white'
-                : 'border-border-default text-text-secondary hover:text-text-primary bg-bg-elevated',
-            ]"
-            @click="settings.setUnitSystem(u)"
-          >
-            {{ u }}
-          </button>
-        </div>
+        <SelectButton
+          v-model="settings.unitSystem"
+          :options="unitOptions"
+          option-label="label"
+          option-value="value"
+          class="w-full"
+          @change="settings.setUnitSystem(settings.unitSystem)"
+        />
       </div>
 
       <!-- Angular unit -->
       <div>
-        <p class="section-label">Angular Unit</p>
-        <div class="flex gap-2">
-          <button
-            v-for="a in ['MOA', 'MRAD'] as const"
-            :key="a"
-            :class="[
-              'flex-1 py-2 rounded border text-sm transition-colors',
-              settings.angleUnit === a
-                ? 'bg-primary border-primary text-white'
-                : 'border-border-default text-text-secondary hover:text-text-primary bg-bg-elevated',
-            ]"
-            @click="settings.setAngleUnit(a)"
-          >
-            {{ a }}
-          </button>
-        </div>
+        <p class="section-label">Angular Corrections</p>
+        <SelectButton
+          v-model="settings.angleUnit"
+          :options="angleOptions"
+          option-label="label"
+          option-value="value"
+          class="w-full"
+          @change="settings.setAngleUnit(settings.angleUnit)"
+        />
       </div>
 
+      <Divider />
+
       <!-- About -->
-      <div class="pt-4 border-t border-border-subtle">
+      <div>
         <p class="section-label">About</p>
         <p class="text-xs text-text-muted leading-relaxed">
-          TD Ballistics — a point-mass ballistic solver using the G1/G7 drag models,
-          RK4 integration, Coriolis and Eötvös effects, and gyroscopic spin drift.
+          TD Ballistics — point-mass solver using G1/G7 drag models,
+          RK4 integration, Coriolis/Eötvös, and gyroscopic spin drift.
         </p>
       </div>
     </div>

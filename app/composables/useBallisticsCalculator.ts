@@ -3,6 +3,7 @@
  * Validates inputs, runs the calculation, and commits results.
  */
 import { watch } from 'vue'
+import { computeTrajectory } from '../physics/engine'
 
 export function useBallisticsCalculator() {
   const inputStore = useInputStore()
@@ -36,8 +37,6 @@ export function useBallisticsCalculator() {
     // Use setTimeout to yield to the UI before the potentially heavy calculation
     setTimeout(() => {
       try {
-        // Dynamically import to keep the engine out of the initial bundle
-        const { computeTrajectory } = require('../physics/engine')
         const result = computeTrajectory(inputStore.allInputs)
         resultsStore.setResult(result)
       } catch (e) {

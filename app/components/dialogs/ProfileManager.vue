@@ -29,10 +29,6 @@ async function load(id: string) {
   emit('update:visible', false)
 }
 
-async function doDelete(id: string) {
-  await deleteProfile(id)
-}
-
 function downloadExport() {
   const json = exportAsJson()
   const blob = new Blob([json], { type: 'application/json' })
@@ -62,108 +58,74 @@ async function doImport() {
     modal
     header="Profiles"
     :style="{ width: '90vw', maxWidth: '480px' }"
-    :pt="{
-      root: 'bg-bg-surface border border-border-default rounded-xl shadow-2xl',
-      header: 'px-6 py-4 border-b border-border-subtle flex items-center justify-between',
-      headerTitle: 'text-text-primary font-semibold',
-      closeButton: 'text-text-muted hover:text-text-primary',
-      content: 'px-6 py-4',
-    }"
     @update:visible="emit('update:visible', $event)"
   >
     <!-- Save new profile -->
-    <div class="space-y-2 mb-6">
+    <div class="space-y-2 mb-5">
       <p class="section-label">Save Current Setup</p>
-      <input
+      <InputText
         v-model="newName"
-        type="text"
         placeholder="Profile name..."
-        class="w-full bg-input-bg border border-input-border text-input-text rounded px-3 py-2 text-sm focus:border-primary focus:outline-none"
+        class="w-full"
         @keydown.enter="save"
       />
-      <textarea
+      <Textarea
         v-model="newNotes"
         placeholder="Notes (optional)..."
         rows="2"
-        class="w-full bg-input-bg border border-input-border text-input-text rounded px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none"
+        class="w-full"
+        auto-resize
       />
-      <p v-if="saveError" class="text-status-error text-xs">{{ saveError }}</p>
-      <button
-        class="w-full py-2 rounded bg-primary hover:bg-primary-hover text-white text-sm font-medium transition-colors"
-        :disabled="working"
+      <Message v-if="saveError" severity="error" :closable="false">{{ saveError }}</Message>
+      <Button
+        label="Save Profile"
+        class="w-full"
+        :loading="working"
         @click="save"
-      >
-        Save Profile
-      </button>
+      />
     </div>
+
+    <Divider />
 
     <!-- Profile list -->
     <div class="space-y-2 mb-4">
       <p class="section-label">Saved Profiles ({{ profileStore.profileCount }})</p>
-      <div v-if="!profileStore.profileCount" class="text-text-muted text-sm text-center py-4">
+      <p v-if="!profileStore.profileCount" class="text-text-muted text-sm text-center py-4">
         No profiles saved yet.
-      </div>
+      </p>
       <div
         v-for="profile in profileStore.profiles"
         :key="profile.id"
-        :class="[
-          'flex items-center gap-2 p-3 rounded border transition-colors',
-          profileStore.activeProfileId === profile.id
-            ? 'border-primary bg-primary/10'
-            : 'border-border-default bg-bg-elevated hover:bg-bg-overlay',
-        ]"
+        class="flex items-center gap-2 p-3 rounded border border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-text-primary truncate">{{ profile.name }}</p>
+          <p class="text-sm font-medium truncate">{{ profile.name }}</p>
           <p v-if="profile.notes" class="text-xs text-text-muted truncate">{{ profile.notes }}</p>
           <p class="text-xs text-text-muted">{{ new Date(profile.updatedAt).toLocaleDateString() }}</p>
         </div>
-        <button
-          class="px-2 py-1 text-xs rounded bg-primary hover:bg-primary-hover text-white transition-colors"
-          @click="load(profile.id)"
-        >
-          Load
-        </button>
-        <button
-          class="px-2 py-1 text-xs rounded border border-status-error text-status-error hover:bg-status-error/10 transition-colors"
-          @click="doDelete(profile.id)"
-        >
-          Del
-        </button>
+        <Button label="Load" size="small" @click="load(profile.id)" />
+        <Button label="Del" size="small" severity="danger" outlined @click="deleteProfile(profile.id)" />
       </div>
     </div>
 
+    <Divider />
+
     <!-- Import / Export -->
-    <div class="border-t border-border-subtle pt-4 flex gap-2 flex-wrap">
-      <button
-        class="px-3 py-1.5 text-xs rounded border border-border-default text-text-secondary hover:text-text-primary transition-colors"
-        @click="downloadExport"
-      >
-        Export JSON
-      </button>
-      <button
-        class="px-3 py-1.5 text-xs rounded border border-border-default text-text-secondary hover:text-text-primary transition-colors"
-        @click="showImport = !showImport"
-      >
-        Import JSON
-      </button>
+    <div class="flex gap-2 flex-wrap">
+      <Button label="Export JSON" size="small" outlined @click="downloadExport" />
+      <Button label="Import JSON" size="small" outlined @click="showImport = !showImport" />
     </div>
 
     <div v-if="showImport" class="mt-3 space-y-2">
-      <textarea
+      <Textarea
         v-model="importText"
         rows="4"
         placeholder="Paste exported JSON here..."
-        class="w-full bg-input-bg border border-input-border text-input-text rounded px-3 py-2 text-xs focus:border-primary focus:outline-none resize-none font-mono"
+        class="w-full font-mono text-xs"
       />
-      <p v-if="importError" class="text-status-error text-xs">{{ importError }}</p>
-      <p v-if="importSuccess" class="text-status-success text-xs">{{ importSuccess }}</p>
-      <button
-        class="px-3 py-1.5 text-xs rounded bg-primary hover:bg-primary-hover text-white transition-colors"
-        @click="doImport"
-      >
-        Import
-      </button>
+      <Message v-if="importError" severity="error" :closable="false">{{ importError }}</Message>
+      <Message v-if="importSuccess" severity="success" :closable="false">{{ importSuccess }}</Message>
+      <Button label="Import" size="small" @click="doImport" />
     </div>
   </Dialog>
 </template>

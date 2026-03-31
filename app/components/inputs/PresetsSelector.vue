@@ -22,14 +22,7 @@ function apply(id: string) {
       option-label="label"
       option-value="id"
       placeholder="Select a cartridge preset..."
-      class="w-full text-sm"
-      :pt="{
-        root: 'w-full',
-        label: 'text-text-primary text-sm px-3 py-2 bg-bg-elevated border border-border-default rounded-l cursor-pointer',
-        trigger: 'bg-bg-elevated border-l-0 border border-border-default rounded-r px-2 flex items-center',
-        panel: 'bg-bg-elevated border border-border-default rounded shadow-xl mt-1',
-        item: 'px-3 py-2 text-sm text-text-primary hover:bg-bg-overlay cursor-pointer',
-      }"
+      class="w-full"
       @change="apply(selected!)"
     />
   </div>

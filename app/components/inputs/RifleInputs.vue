@@ -13,8 +13,7 @@ const store = useInputStore()
           v-model="store.rifle.caliberInches"
           :min="0.1" :max="1.0" :step="0.001"
           :min-fraction-digits="3" :max-fraction-digits="3"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -23,8 +22,7 @@ const store = useInputStore()
         <InputNumber
           v-model="store.rifle.barrelLengthInches"
           :min="10" :max="36" :step="1"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -34,8 +32,7 @@ const store = useInputStore()
           v-model="store.rifle.sightHeightInches"
           :min="0.5" :max="5.0" :step="0.1"
           :min-fraction-digits="2" :max-fraction-digits="2"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -44,8 +41,7 @@ const store = useInputStore()
         <InputNumber
           v-model="store.rifle.twistRateInchesPerTurn"
           :min="4" :max="20" :step="1"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
     </div>
@@ -71,14 +67,6 @@ const store = useInputStore()
     </label>
   </fieldset>
 </template>
-
-<script lang="ts">
-// Shared PrimeVue input PassThrough tokens
-export const inputPT = {
-  root: 'w-full',
-  input: 'w-full bg-input-bg border border-input-border text-input-text rounded px-2 py-1.5 text-sm focus:border-primary focus:outline-none font-mono',
-}
-</script>
 
 <style>
 .input-label {

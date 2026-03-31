@@ -1,10 +1,5 @@
 <script setup lang="ts">
 const store = useInputStore()
-
-const inputPT = {
-  root: 'w-full',
-  input: 'w-full bg-input-bg border border-input-border text-input-text rounded px-2 py-1.5 text-sm focus:border-primary focus:outline-none font-mono',
-}
 </script>
 
 <template>
@@ -17,8 +12,7 @@ const inputPT = {
         <InputNumber
           v-model="store.shot.muzzleVelocityFps"
           :min="500" :max="5000" :step="10"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -27,8 +21,7 @@ const inputPT = {
         <InputNumber
           v-model="store.shot.zeroDistanceYards"
           :min="25" :max="1000" :step="25"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -37,8 +30,7 @@ const inputPT = {
         <InputNumber
           v-model="store.shot.targetDistanceYards"
           :min="25" :max="3000" :step="25"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -47,8 +39,7 @@ const inputPT = {
         <InputNumber
           v-model="store.shot.azimuthDegrees"
           :min="0" :max="360" :step="1"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
 
@@ -57,8 +48,7 @@ const inputPT = {
         <InputNumber
           v-model="store.shot.trajectoryStepYards"
           :min="10" :max="100" :step="5"
-          class="input-field"
-          :pt="inputPT"
+          fluid
         />
       </label>
     </div>

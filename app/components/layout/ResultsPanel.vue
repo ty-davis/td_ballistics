@@ -3,50 +3,44 @@ const settingsStore = useSettingsStore()
 const resultsStore = useResultsStore()
 
 const tabs = [
-  { key: 'table', label: 'Data Table' },
-  { key: 'charts', label: 'Charts' },
-  { key: '3d', label: '3D View' },
-] as const
+  { label: 'Data Table', key: 'table' },
+  { label: 'Charts', key: 'charts' },
+  { label: '3D View', key: '3d' },
+]
 </script>
 
 <template>
-  <main class="flex-1 flex flex-col min-h-0 overflow-hidden">
+  <main class="flex-1 flex flex-col min-h-0 overflow-hidden bg-surface-950">
     <!-- Tab bar -->
-    <div class="flex items-center gap-1 px-4 py-2 bg-bg-surface border-b border-border-default">
-      <button
+    <div class="flex items-center gap-1 px-3 py-2 bg-surface-900 border-b border-surface-700 flex-wrap">
+      <Button
         v-for="tab in tabs"
         :key="tab.key"
-        :class="[
-          'px-4 py-1.5 rounded text-sm font-medium transition-colors',
-          settingsStore.activeResultTab === tab.key
-            ? 'bg-primary text-white'
-            : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated',
-        ]"
-        @click="settingsStore.setActiveResultTab(tab.key)"
-      >
-        {{ tab.label }}
-      </button>
-
+        :label="tab.label"
+        size="small"
+        :severity="settingsStore.activeResultTab === tab.key ? 'primary' : 'secondary'"
+        :outlined="settingsStore.activeResultTab !== tab.key"
+        :text="settingsStore.activeResultTab !== tab.key"
+        @click="settingsStore.setActiveResultTab(tab.key as 'table' | 'charts' | '3d')"
+      />
       <div class="ml-auto">
         <UnitToggle />
       </div>
     </div>
 
-    <!-- Loading state -->
+    <!-- Loading -->
     <div v-if="resultsStore.loading" class="flex-1 flex items-center justify-center">
-      <div class="text-text-secondary text-sm animate-pulse">Calculating...</div>
+      <ProgressSpinner style="width: 40px; height: 40px" />
     </div>
 
-    <!-- Error state -->
+    <!-- Error -->
     <div v-else-if="resultsStore.error" class="flex-1 flex items-center justify-center p-8">
-      <div class="text-center">
-        <p class="text-status-error text-sm">{{ resultsStore.error }}</p>
-      </div>
+      <Message severity="error" :closable="false">{{ resultsStore.error }}</Message>
     </div>
 
-    <!-- No result yet -->
+    <!-- Empty state -->
     <div v-else-if="!resultsStore.hasResult" class="flex-1 flex items-center justify-center p-8">
-      <div class="text-center text-text-muted">
+      <div class="text-center text-surface-500">
         <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -57,22 +51,24 @@ const tabs = [
 
     <!-- Results -->
     <template v-else>
-      <div class="flex-1 overflow-auto p-4">
-        <!-- Summary card always visible -->
-        <SummaryCard class="mb-4" />
+      <div class="flex-1 overflow-auto p-4 space-y-4">
+        <SummaryCard />
 
-        <!-- Tab content -->
         <div v-show="settingsStore.activeResultTab === 'table'" class="space-y-4">
           <TrajectoryTable />
           <ComeUpTable />
         </div>
 
-        <div v-show="settingsStore.activeResultTab === 'charts'" class="space-y-4">
-          <ChartContainer />
+        <div v-show="settingsStore.activeResultTab === 'charts'">
+          <ClientOnly>
+            <ChartContainer />
+          </ClientOnly>
         </div>
 
         <div v-show="settingsStore.activeResultTab === '3d'">
-          <TrajectoryScene />
+          <ClientOnly>
+            <TrajectoryScene />
+          </ClientOnly>
         </div>
       </div>
     </template>
