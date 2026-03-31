@@ -1,0 +1,14 @@
+@import './colors.css';
+@import './base.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PrimeVue core (animations, transitions only — no theme colors) */
+@layer base {
+  .p-component {
+    font-family: inherit;
+    font-size: inherit;
+  }
+}
