@@ -120,6 +120,13 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
+      script: [
+        // Apply saved theme before first paint to avoid flash
+        {
+          innerHTML: `(function(){try{var t=localStorage.getItem('td_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})()`,
+          type: 'text/javascript',
+        },
+      ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' },

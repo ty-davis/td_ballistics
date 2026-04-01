@@ -4,6 +4,34 @@ const profileStore = useProfileStore()
 
 const showSettings = ref(false)
 const showProfiles = ref(false)
+const showEnvironments = ref(false)
+
+// Mobile overflow menu
+const mobileMenu = ref()
+const mobileMenuItems = [
+  {
+    label: 'Profiles',
+    icon: 'pi pi-bookmark',
+    command: () => { showProfiles.value = true },
+  },
+  {
+    label: 'Environments',
+    icon: 'pi pi-cloud',
+    command: () => { showEnvironments.value = true },
+  },
+  {
+    separator: true,
+  },
+  {
+    label: 'Settings',
+    icon: 'pi pi-cog',
+    command: () => { showSettings.value = true },
+  },
+]
+
+function toggleMobileMenu(event: Event) {
+  mobileMenu.value.toggle(event)
+}
 </script>
 
 <template>
@@ -26,7 +54,6 @@ const showProfiles = ref(false)
       </Button>
 
       <div class="flex items-center gap-2">
-        <!-- Crosshair icon -->
         <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="9" stroke-width="1.5" />
           <circle cx="12" cy="12" r="3" stroke-width="1.5" />
@@ -43,33 +70,63 @@ const showProfiles = ref(false)
       </div>
     </div>
 
-    <!-- Right: actions -->
+    <!-- Right: desktop buttons + mobile overflow menu -->
     <div class="flex items-center gap-1">
-      <Button
-        label="Profiles"
-        size="small"
-        outlined
-        severity="secondary"
-        @click="showProfiles = true"
-      />
+      <!-- Desktop: show all three inline -->
+      <div class="hidden sm:flex items-center gap-1">
+        <Button
+          label="Profiles"
+          size="small"
+          outlined
+          severity="secondary"
+          @click="showProfiles = true"
+        />
+        <Button
+          label="Environments"
+          size="small"
+          outlined
+          severity="secondary"
+          @click="showEnvironments = true"
+        />
+        <Button
+          text
+          rounded
+          severity="secondary"
+          aria-label="Settings"
+          @click="showSettings = true"
+        >
+          <template #icon>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </template>
+        </Button>
+      </div>
+
+      <!-- Mobile: single overflow menu button -->
       <Button
         text
         rounded
         severity="secondary"
-        aria-label="Settings"
-        @click="showSettings = true"
+        aria-label="Menu"
+        class="sm:hidden"
+        @click="toggleMobileMenu"
       >
         <template #icon>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
           </svg>
         </template>
       </Button>
+      <Menu ref="mobileMenu" :model="mobileMenuItems" popup />
     </div>
   </header>
 
   <ProfileManager v-model:visible="showProfiles" />
+  <EnvironmentManager v-model:visible="showEnvironments" />
   <SettingsDrawer v-model:visible="showSettings" />
 </template>

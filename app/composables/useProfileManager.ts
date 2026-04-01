@@ -1,27 +1,32 @@
 /**
- * Profile persistence composable — wraps localForage for save/load/export.
+ * Profile persistence — gun/ammo hardware setup (rifle + bullet).
+ * Uses a dedicated localforage createInstance to avoid global config conflicts.
  */
 import { ref } from 'vue'
-import type { BallisticsProfile, ProfileExportBundle } from '../types/profile'
+import type { BallisticsProfile } from '../types/profile'
 
-const STORAGE_KEY = 'td_ballistics_profiles'
 const SCHEMA_VERSION = 1
+const STORAGE_KEY = 'profiles'
+
+let _instance: Awaited<ReturnType<typeof import('localforage').default.createInstance>> | null = null
+
+async function getInstance() {
+  if (!_instance) {
+    const localforage = (await import('localforage')).default
+    _instance = localforage.createInstance({ name: 'td_ballistics', storeName: 'profiles' })
+  }
+  return _instance
+}
 
 export function useProfileManager() {
   const profileStore = useProfileStore()
   const inputStore = useInputStore()
   const working = ref(false)
 
-  async function getLocalForage() {
-    const localforage = (await import('localforage')).default
-    localforage.config({ name: 'td_ballistics', storeName: 'profiles' })
-    return localforage
-  }
-
   async function loadAll() {
     try {
-      const lf = await getLocalForage()
-      const raw = await lf.getItem<BallisticsProfile[]>(STORAGE_KEY)
+      const db = await getInstance()
+      const raw = await db.getItem<BallisticsProfile[]>(STORAGE_KEY)
       profileStore.setProfiles(raw ?? [])
     } catch (e) {
       console.error('Failed to load profiles:', e)
@@ -30,8 +35,9 @@ export function useProfileManager() {
   }
 
   async function persistAll() {
-    const lf = await getLocalForage()
-    await lf.setItem(STORAGE_KEY, profileStore.profiles)
+    const db = await getInstance()
+    // Strip Vue reactivity proxies — IndexedDB structured clone rejects Proxy objects
+    await db.setItem(STORAGE_KEY, JSON.parse(JSON.stringify(profileStore.profiles)))
   }
 
   async function saveCurrentAsProfile(name: string, notes = ''): Promise<BallisticsProfile> {
@@ -43,7 +49,10 @@ export function useProfileManager() {
         notes,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        input: { ...inputStore.allInputs },
+        input: {
+          rifle: { ...inputStore.rifle },
+          bullet: { ...inputStore.bullet },
+        },
         version: SCHEMA_VERSION,
       }
       profileStore.addProfile(profile)
@@ -57,13 +66,9 @@ export function useProfileManager() {
   async function loadProfile(id: string) {
     const profile = profileStore.profiles.find(p => p.id === id)
     if (!profile) return
-    inputStore.applyPreset({ id: profile.id, label: profile.name, description: '', input: profile.input })
+    inputStore.updateRifle(profile.input.rifle)
+    inputStore.updateBullet(profile.input.bullet)
     profileStore.setActiveProfile(id)
-  }
-
-  async function updateProfile(id: string, name: string, notes: string) {
-    profileStore.updateProfile(id, { name, notes })
-    await persistAll()
   }
 
   async function deleteProfile(id: string) {
@@ -71,35 +76,12 @@ export function useProfileManager() {
     await persistAll()
   }
 
-  function exportAsJson(): string {
-    const bundle: ProfileExportBundle = {
-      exportedAt: new Date().toISOString(),
-      appVersion: '1.0.0',
-      profiles: profileStore.profiles,
-    }
-    return JSON.stringify(bundle, null, 2)
-  }
-
-  async function importFromJson(json: string): Promise<number> {
-    const bundle: ProfileExportBundle = JSON.parse(json)
-    const imported = bundle.profiles ?? []
-    for (const p of imported) {
-      if (!profileStore.profiles.find(existing => existing.id === p.id)) {
-        profileStore.addProfile(p)
-      }
-    }
-    await persistAll()
-    return imported.length
-  }
-
   return {
     working,
     loadAll,
+    persistAll,
     saveCurrentAsProfile,
     loadProfile,
-    updateProfile,
     deleteProfile,
-    exportAsJson,
-    importFromJson,
   }
 }

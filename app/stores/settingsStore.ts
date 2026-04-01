@@ -16,6 +16,8 @@ export const useSettingsStore = defineStore('settings', {
       this.theme = theme
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', theme)
+        // Keep a tiny sync key just for the anti-flash <head> script
+        try { localStorage.setItem('td_theme', theme) } catch {}
       }
     },
     setUnitSystem(system: UnitSystem) {
@@ -33,6 +35,7 @@ export const useSettingsStore = defineStore('settings', {
     initTheme() {
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', this.theme)
+        try { localStorage.setItem('td_theme', this.theme) } catch {}
       }
     },
   },

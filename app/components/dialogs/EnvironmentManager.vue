@@ -2,8 +2,8 @@
 const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ 'update:visible': [boolean] }>()
 
-const profileStore = useProfileStore()
-const { saveCurrentAsProfile, loadProfile, deleteProfile, working } = useProfileManager()
+const envStore = useEnvironmentStore()
+const { saveCurrentAsEnvironment, loadEnvironment, deleteEnvironment, working } = useEnvironmentManager()
 
 const newName = ref('')
 const newNotes = ref('')
@@ -14,14 +14,14 @@ async function save() {
     saveError.value = 'Name is required'
     return
   }
-  await saveCurrentAsProfile(newName.value.trim(), newNotes.value)
+  await saveCurrentAsEnvironment(newName.value.trim(), newNotes.value)
   newName.value = ''
   newNotes.value = ''
   saveError.value = ''
 }
 
 async function load(id: string) {
-  await loadProfile(id)
+  await loadEnvironment(id)
   emit('update:visible', false)
 }
 </script>
@@ -30,17 +30,17 @@ async function load(id: string) {
   <Dialog
     :visible="visible"
     modal
-    header="Profiles"
+    header="Environments"
     :style="{ width: '90vw', maxWidth: '480px' }"
     @update:visible="emit('update:visible', $event)"
   >
-    <!-- Save new profile -->
+    <!-- Save current environment -->
     <div class="space-y-2 mb-5">
-      <p class="section-label">Save Current Gun Setup</p>
-      <p class="text-xs text-text-muted">Saves rifle hardware and bullet selection.</p>
+      <p class="section-label">Save Current Conditions</p>
+      <p class="text-xs text-text-muted">Saves wind, atmosphere, shot angle, target distance, and rifle cant.</p>
       <InputText
         v-model="newName"
-        placeholder="Profile name..."
+        placeholder="Environment name..."
         class="w-full"
         @keydown.enter="save"
       />
@@ -53,7 +53,7 @@ async function load(id: string) {
       />
       <Message v-if="saveError" severity="error" :closable="false">{{ saveError }}</Message>
       <Button
-        label="Save Profile"
+        label="Save Environment"
         class="w-full"
         :loading="working"
         @click="save"
@@ -62,27 +62,28 @@ async function load(id: string) {
 
     <Divider />
 
-    <!-- Profile list -->
+    <!-- Environment list -->
     <div class="space-y-2">
-      <p class="section-label">Saved Profiles ({{ profileStore.profileCount }})</p>
-      <p v-if="!profileStore.profileCount" class="text-text-muted text-sm text-center py-4">
-        No profiles saved yet.
+      <p class="section-label">Saved Environments ({{ envStore.environmentCount }})</p>
+      <p v-if="!envStore.environmentCount" class="text-text-muted text-sm text-center py-4">
+        No environments saved yet.
       </p>
       <div
-        v-for="profile in profileStore.profiles"
-        :key="profile.id"
+        v-for="env in envStore.environments"
+        :key="env.id"
         class="flex items-center gap-2 p-3 rounded border border-border-default hover:bg-bg-elevated transition-colors"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium truncate">{{ profile.name }}</p>
-          <p v-if="profile.notes" class="text-xs text-text-muted truncate">{{ profile.notes }}</p>
+          <p class="text-sm font-medium truncate">{{ env.name }}</p>
+          <p v-if="env.notes" class="text-xs text-text-muted truncate">{{ env.notes }}</p>
           <p class="text-xs text-text-muted">
-            {{ profile.input.bullet.weightGrains }}gr {{ profile.input.bullet.dragModel }} ·
-            {{ new Date(profile.updatedAt).toLocaleDateString() }}
+            Wind {{ env.input.environment.windSpeedMph }}mph ·
+            {{ env.input.shot.shotElevationAngleDegrees }}° angle ·
+            {{ new Date(env.updatedAt).toLocaleDateString() }}
           </p>
         </div>
-        <Button label="Load" size="small" @click="load(profile.id)" />
-        <Button label="Del" size="small" severity="danger" outlined @click="deleteProfile(profile.id)" />
+        <Button label="Load" size="small" @click="load(env.id)" />
+        <Button label="Del" size="small" severity="danger" outlined @click="deleteEnvironment(env.id)" />
       </div>
     </div>
   </Dialog>
