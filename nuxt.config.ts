@@ -117,4 +117,11 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['stores', 'composables', 'utils'],
   },
+  app: {
+      head: {
+        link: [
+          { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }
+        ]
+      }
+    }
 })

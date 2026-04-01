@@ -6,23 +6,25 @@ const tabs = [
   { label: 'Data Table', key: 'table' },
   { label: 'Charts', key: 'charts' },
   { label: '3D View', key: '3d' },
+  { label: 'Target', key: 'target' },
 ]
 </script>
 
 <template>
   <main class="flex-1 flex flex-col min-h-0 overflow-hidden bg-surface-950">
     <!-- Tab bar -->
-    <div class="flex items-center gap-1 px-3 py-2 bg-surface-900 border-b border-surface-700 flex-wrap">
-      <Button
+    <div class="flex items-center gap-2 px-4 py-2.5 bg-bg-surface border-b border-border-subtle flex-wrap">
+      <button
         v-for="tab in tabs"
         :key="tab.key"
-        :label="tab.label"
-        size="small"
-        :severity="settingsStore.activeResultTab === tab.key ? 'primary' : 'secondary'"
-        :outlined="settingsStore.activeResultTab !== tab.key"
-        :text="settingsStore.activeResultTab !== tab.key"
-        @click="settingsStore.setActiveResultTab(tab.key as 'table' | 'charts' | '3d')"
-      />
+        :class="[
+          'px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors',
+          settingsStore.activeResultTab === tab.key
+            ? 'bg-primary text-white'
+            : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated',
+        ]"
+        @click="settingsStore.setActiveResultTab(tab.key as 'table' | 'charts' | '3d' | 'target')"
+      >{{ tab.label }}</button>
       <div class="ml-auto">
         <UnitToggle />
       </div>
@@ -69,6 +71,10 @@ const tabs = [
           <ClientOnly>
             <TrajectoryScene />
           </ClientOnly>
+        </div>
+
+        <div v-show="settingsStore.activeResultTab === 'target'">
+          <TargetView />
         </div>
       </div>
     </template>

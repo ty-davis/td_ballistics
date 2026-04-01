@@ -20,7 +20,7 @@ const { calculate } = useBallisticsCalculator()
     :class="[
       'fixed lg:relative inset-y-0 left-0 z-40 lg:z-auto',
       'w-80 lg:w-72 xl:w-80',
-      'bg-surface-900 border-r border-surface-700',
+      'bg-bg-surface border-r border-border-subtle',
       'flex flex-col overflow-hidden',
       'transition-transform duration-300',
       settingsStore.sidePanelOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
@@ -36,7 +36,7 @@ const { calculate } = useBallisticsCalculator()
     </div>
 
     <!-- Calculate button -->
-    <div class="p-4 border-t border-surface-700">
+    <div class="p-4 border-t border-border-subtle">
       <Button
         label="Calculate Trajectory"
         class="w-full"

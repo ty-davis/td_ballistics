@@ -7,7 +7,7 @@ const showProfiles = ref(false)
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-4 py-2 bg-surface-900 border-b border-surface-700">
+  <header class="flex items-center justify-between px-4 py-2 bg-bg-surface border-b border-border-subtle">
     <!-- Left: hamburger + title -->
     <div class="flex items-center gap-3">
       <Button

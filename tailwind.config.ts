@@ -5,6 +5,9 @@ export default {
     './app/**/*.{vue,ts,js}',
     './nuxt.config.ts',
   ],
+  // Use data-theme attribute instead of prefers-color-scheme so dark: classes
+  // match the app's own theme system
+  darkMode: ['selector', '[data-theme="dark"], [data-theme="military"]'],
   theme: {
     extend: {
       colors: {

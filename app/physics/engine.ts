@@ -147,21 +147,26 @@ function integrate(
 
 /**
  * Find the bore elevation angle (radians) that causes the bullet to cross
- * the sight line at the specified zero distance.
+ * the angled sight line at the specified zero distance.
  *
- * Sight line: starts at muzzle position (0, sightHeight, 0) and is aimed
- * horizontally at (zeroDistM, sightHeight, 0) for a level shot.
+ * Sight line at shot elevation angle θ: y = x * tan(θ)
+ * For a level shot (θ=0) this reduces to y=0, identical to previous behaviour.
  *
- * Binary search over bore elevation angle.
+ * Binary search over total bore angle (already includes shotElevRad).
  */
 function findZeroAngle(
   muzzleVelMps: number,
   sightHeightM: number,
   zeroDistM: number,
+  shotElevRad: number,
   ctx: StepContext,
 ): number {
-  let lo = -0.05  // ~−3° in radians (shooting down)
-  let hi = 0.15   // ~8° in radians (shooting up)
+  // Search within ±8° of the shot elevation angle
+  let lo = shotElevRad - 0.05
+  let hi = shotElevRad + 0.15
+
+  // Target y on the angled sight line at zero distance
+  const targetY = zeroDistM * Math.tan(shotElevRad)
 
   for (let iter = 0; iter < 60; iter++) {
     const mid = (lo + hi) / 2
@@ -175,24 +180,23 @@ function findZeroAngle(
     ]
     const deriv = makeDerivFn(ctx)
     let state: State6 = [...initState]
+    let prevState: State6 = [...initState]
     let t = 0
     let y_at_zero = -sightHeightM
 
     while (state[0] < zeroDistM && t < MAX_TIME) {
+      prevState = state
       state = rk4Step(state, t, DT, deriv)
       t += DT
       if (state[0] >= zeroDistM) {
-        // Interpolate
-        const frac = (zeroDistM - state[0] + (state[3] * DT)) / Math.max(state[3] * DT, 1e-10)
-        y_at_zero = state[1] - (state[1] - (state[1] - state[4] * DT * frac))
-        y_at_zero = state[1]
+        // Interpolate to exact zero distance to avoid vy-induced error at steep angles
+        const frac = (zeroDistM - prevState[0]) / Math.max(state[0] - prevState[0], 1e-10)
+        y_at_zero = prevState[1] + (state[1] - prevState[1]) * frac
         break
       }
     }
 
-    // At zero distance, we want y == 0 (on sight line, which is 0 in bore-relative coords)
-    // The bore starts at y = -sightHeightM, sight line is at y = 0 at muzzle, 0 at zeroDistM
-    if (y_at_zero < 0) lo = mid
+    if (y_at_zero < targetY) lo = mid
     else hi = mid
   }
 
@@ -262,41 +266,29 @@ export function computeTrajectory(input: BallisticsInput): TrajectoryResult {
   }
 
   // ── Find zero angle ───────────────────────────────────────
-  const zeroAngle = findZeroAngle(muzzleVelMps, sightHeightM, zeroDistM, ctx)
+  // zeroAngle is the total bore elevation (already includes shotElevRad compensation)
+  // so that the bullet crosses the angled sight line at zeroDistM.
+  const zeroAngle = findZeroAngle(muzzleVelMps, sightHeightM, zeroDistM, shotElevRad, ctx)
 
-  // ── Apply cant and shot elevation to initial velocity ──────
-  // Base: bore aimed along x axis with zeroAngle elevation
-  // Shot elevation: tilt the entire shot plane
-  // Cant: rotate around x axis
-  const totalElevRad = zeroAngle + shotElevRad
-
-  // Initial velocity with cant applied
-  // Without cant: vx = v*cos(elev), vy = v*sin(elev), vz = 0
-  // With cant θ: vy becomes vy*cos(θ), vz becomes vy*sin(θ)
+  // ── Apply cant to initial velocity ────────────────────────
+  // Cant rotates the rifle around the bore axis. The bore direction (shot elevation) stays
+  // in the vertical plane. Only the small correction angle delta = zeroAngle - shotElevRad
+  // (which compensates for sight height and bullet drop to zero) gets rotated by cant.
+  // Without this separation, a 15° uphill + 90° cant would wrongly rotate sin(15°)≈0.26
+  // of muzzle velocity into the lateral axis.
   const vBase = muzzleVelMps
-  const vxInit = vBase * Math.cos(totalElevRad)
-  const vyInit = vBase * Math.sin(totalElevRad) * Math.cos(cantRad)
-  const vzInit = vBase * Math.sin(totalElevRad) * Math.sin(cantRad)
+  const delta = zeroAngle - shotElevRad  // small correction above the shot direction
+  const cosShot = Math.cos(shotElevRad)
+  const sinShot = Math.sin(shotElevRad)
+  const vxInit = vBase * (cosShot - delta * sinShot * Math.cos(cantRad))
+  const vyInit = vBase * (sinShot + delta * cosShot * Math.cos(cantRad))
+  const vzInit = vBase * delta * Math.sin(cantRad)
 
   // Bore position: always starts below sight line regardless of cant
   const initialState: State6 = [0, -sightHeightM, 0, vxInit, vyInit, vzInit]
 
   // ── Run integration ────────────────────────────────────────
   const rawPoints = integrate(initialState, ctx, maxDistM, stepM)
-
-  // ── Build sight line ───────────────────────────────────────
-  // The sight line at distance x: y = sightHeight * cos(zeroAngle) * (x / zeroDistM)
-  // Simplified for small angles: y_sight(x) = -sightHeightM + (sightHeightM / zeroDistM) * x
-  // Wait — sight line is straight from (0, 0) to (zeroDistM, 0) in sight-space.
-  // Bore at x=0 is at y=-sightHeightM. Bullet crosses sight line (y=0) at ~zeroDistM.
-  function sightLineY(_x: number): number {
-    return 0 // Sight line is y=0 in our coordinate system (origin = sight at muzzle)
-  }
-
-  // Drop from zero = bullet y position - sight line y
-  // But we also need the zero crossing behavior
-  // The bullet's position in the "drop from bore" sense is just y + sightHeightM
-  // Drop from zero = y_bullet - y_sightline = y_bullet (since sight line = 0)
 
   // ── Convert raw points to TrajectoryPoints ─────────────────
   const points: TrajectoryPoint[] = rawPoints.map((p) => {
@@ -305,10 +297,12 @@ export function computeTrajectory(input: BallisticsInput): TrajectoryResult {
     const velFps = velMps * MPS_TO_FPS
     const mach = velMps / atmosphere.speedOfSoundMps
 
-    // Drop: the bullet's y position relative to sight line (y=0)
-    // dropInches is negative when below sight line
-    const dropInches = p.y * M_TO_IN
-    const dropFromZeroInches = p.y * M_TO_IN // same — sight line is y=0
+    // Drop: bullet's y position relative to the angled sight line.
+    // Sight line: y = x * tan(shotElevRad)  (for level shots this is y=0, same as before)
+    // Negative = bullet is below the sight line.
+    const sightY = p.x * Math.tan(shotElevRad)
+    const dropInches = (p.y - sightY) * M_TO_IN
+    const dropFromZeroInches = dropInches
 
     // Lateral (z axis): positive = right
     const windDriftInches = p.z * M_TO_IN

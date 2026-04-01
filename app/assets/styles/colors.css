@@ -71,9 +71,9 @@
   --color-accent-hover:   var(--amber-400);
 
   /* Borders */
-  --color-border:         var(--zinc-700);
-  --color-border-subtle:  var(--zinc-800);
-  --color-border-strong:  var(--zinc-600);
+  --color-border:         var(--zinc-800);
+  --color-border-subtle:  var(--zinc-900);
+  --color-border-strong:  var(--zinc-700);
 
   /* Status */
   --color-success: var(--green-500);

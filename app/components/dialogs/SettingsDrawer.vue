@@ -41,8 +41,8 @@ const angleOptions = [
             :class="[
               'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
               settings.theme === theme.value
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-                : 'border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800',
+                ? 'border-primary-500 bg-primary/10'
+                : 'border-border-default hover:bg-bg-elevated',
             ]"
             @click="settings.setTheme(theme.value)"
           >

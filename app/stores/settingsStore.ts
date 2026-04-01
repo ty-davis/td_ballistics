@@ -6,8 +6,8 @@ export const useSettingsStore = defineStore('settings', {
     unitSystem: 'imperial' as UnitSystem,
     angleUnit: 'MOA' as AngleUnit,
     theme: 'dark' as Theme,
-    sidePanelOpen: true,
-    activeResultTab: 'table' as 'table' | 'charts' | '3d',
+    sidePanelOpen: false,
+    activeResultTab: 'table' as 'table' | 'charts' | '3d' | 'target',
     trajectoryStep: 25 as number,
   }),
 
@@ -27,7 +27,7 @@ export const useSettingsStore = defineStore('settings', {
     toggleSidePanel() {
       this.sidePanelOpen = !this.sidePanelOpen
     },
-    setActiveResultTab(tab: 'table' | 'charts' | '3d') {
+    setActiveResultTab(tab: 'table' | 'charts' | '3d' | 'target') {
       this.activeResultTab = tab
     },
     initTheme() {

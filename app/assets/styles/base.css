@@ -70,3 +70,58 @@ body {
   border-top: 1px solid var(--color-border-subtle);
   margin: 1rem 0;
 }
+
+/* ── PrimeVue dark-mode border overrides ─────────────────────── */
+/*
+ * PrimeVue 4 injects theme CSS at runtime via <style> tags, which
+ * land after this file in the document cascade. !important is required
+ * to override them. Aura dark defaults: borderColor={surface.600}
+ * (#52525b), hoverBorderColor={surface.500} (#71717a) — both too
+ * bright. We clamp them to zinc-700/zinc-600.
+ */
+[data-theme='dark'],
+[data-theme='military'] {
+  /* Input fields (InputText, InputNumber) */
+  & .p-inputtext,
+  & .p-inputnumber-input {
+    border-color: var(--zinc-700) !important;
+    background-color: var(--zinc-800) !important;
+  }
+  & .p-inputtext:hover,
+  & .p-inputnumber-input:hover {
+    border-color: var(--zinc-600) !important;
+  }
+  & .p-inputtext:focus,
+  & .p-inputnumber-input:focus {
+    border-color: var(--olive-400) !important;
+    box-shadow: 0 0 0 1px var(--olive-600) !important;
+  }
+
+  /* Select / Dropdown */
+  & .p-select {
+    border-color: var(--zinc-700) !important;
+    background-color: var(--zinc-800) !important;
+  }
+  & .p-select:hover { border-color: var(--zinc-600) !important; }
+  & .p-select-overlay { border-color: var(--zinc-700) !important; }
+
+  /* Textarea */
+  & .p-textarea {
+    border-color: var(--zinc-700) !important;
+    background-color: var(--zinc-800) !important;
+  }
+  & .p-textarea:hover { border-color: var(--zinc-600) !important; }
+
+  /* SelectButton toggle items */
+  & .p-togglebutton { border-color: var(--zinc-700) !important; }
+  & .p-togglebutton:hover { border-color: var(--zinc-600) !important; }
+  & .p-selectbutton { border-color: var(--zinc-700) !important; }
+
+  /* Drawer / Dialog / Popover */
+  & .p-drawer  { border-color: var(--zinc-800) !important; }
+  & .p-dialog  { border-color: var(--zinc-800) !important; }
+  & .p-popover { border-color: var(--zinc-800) !important; }
+
+  /* Divider lines */
+  & .p-divider::before { border-color: var(--zinc-800) !important; }
+}

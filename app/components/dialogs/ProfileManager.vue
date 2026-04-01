@@ -96,7 +96,7 @@ async function doImport() {
       <div
         v-for="profile in profileStore.profiles"
         :key="profile.id"
-        class="flex items-center gap-2 p-3 rounded border border-surface-200 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors"
+        class="flex items-center gap-2 p-3 rounded border border-border-default hover:bg-bg-elevated transition-colors"
       >
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium truncate">{{ profile.name }}</p>
