@@ -140,8 +140,8 @@ function fmtAngle(moa: number, mrad: number) {
           <rect x="8.3" y="8.2" width="4.4" height="1.8" fill="#c9a05a"/>
 
           <!-- Shoulder bevel hints -->
-          <line x1="8.3" y1="8.2" x2="0" y2="9" stroke="#7a5415" stroke-width="0.25"/>
-          <line x1="12.7" y1="8.2" x2="21" y2="9" stroke="#7a5415" stroke-width="0.25"/>
+          <line x1="8.3" y1="8.2" x2="8.3" y2="9" stroke="#7a5415" stroke-width="0.25"/>
+          <line x1="12.7" y1="8.2" x2="12.7" y2="9" stroke="#7a5415" stroke-width="0.25"/>
 
           <!-- D-zone (outer scoring outline) -->
           <rect x="0.6" y="9.4" width="19.8" height="25" rx="0.3"
