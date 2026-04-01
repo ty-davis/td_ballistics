@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "pwa:icons": "pwa-assets-generator --preset minimal public/logo.svg"
   },
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
@@ -29,6 +30,8 @@
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vite-pwa/nuxt": "^1.1.1",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/test-utils": "^2.4.6",
     "happy-dom": "^20.8.9",

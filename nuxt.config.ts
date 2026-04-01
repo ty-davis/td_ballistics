@@ -63,6 +63,7 @@ export default defineNuxtConfig({
     '@primevue/nuxt-module',
     '@pinia/nuxt',
     '@tresjs/nuxt',
+    '@vite-pwa/nuxt',
   ],
 
   // Register all components by filename only (no directory prefix)
@@ -118,10 +119,56 @@ export default defineNuxtConfig({
     dirs: ['stores', 'composables', 'utils'],
   },
   app: {
-      head: {
-        link: [
-          { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }
-        ]
-      }
-    }
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' },
+      ],
+      meta: [
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'TD Ballistics' },
+        { name: 'theme-color', content: '#0a0c08' },
+      ],
+    },
+  },
+
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'TD Ballistics',
+      short_name: 'TD Ballistics',
+      description: 'Tactical ballistics calculator — works offline',
+      theme_color: '#0a0c08',
+      background_color: '#0a0c08',
+      display: 'standalone',
+      orientation: 'any',
+      start_url: '/',
+      icons: [
+        { src: '/pwa-64x64.png',              sizes: '64x64',   type: 'image/png' },
+        { src: '/pwa-192x192.png',            sizes: '192x192', type: 'image/png' },
+        { src: '/pwa-512x512.png',            sizes: '512x512', type: 'image/png' },
+        { src: '/maskable-icon-512x512.png',  sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    },
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+      cleanupOutdatedCaches: true,
+      runtimeCaching: [
+        {
+          // Cache all navigation requests — ensures offline page loads
+          urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+          handler: 'NetworkFirst' as const,
+          options: {
+            cacheName: 'pages',
+            networkTimeoutSeconds: 3,
+          },
+        },
+      ],
+    },
+    devOptions: {
+      enabled: false, // keep dev server fast; enable temporarily if you need to test SW in dev
+    },
+  },
 })
